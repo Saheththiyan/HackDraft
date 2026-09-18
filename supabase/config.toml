@@ -1,0 +1,29 @@
+project_id = "hackdraft"
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+[db.seed]
+enabled = false
+[studio]
+enabled = true
+port = 54323
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = []
+enable_signup = false
+# Email provider must remain enabled for existing accounts to sign in.
+# The global auth.enable_signup=false above blocks public registration.
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+[storage]
+enabled = true
+file_size_limit = "5MiB"
