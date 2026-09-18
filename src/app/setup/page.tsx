@@ -1,0 +1,3 @@
+export default function SetupPage() {
+  return <main className="mx-auto max-w-2xl px-6 py-24"><p className="eyebrow">HackDraft / Getting started</p><h1 className="mt-4 text-4xl font-bold">Connect your team workspace.</h1><p className="mt-5 text-slate-400">An administrator needs to finish setup before the team can sign in.</p><ol className="panel mt-8 list-inside list-decimal space-y-4 p-6 text-slate-300"><li>Apply the Supabase foundation migration.</li><li>Disable public signup and provision the shared team account.</li><li>Set the Supabase URL and publishable key in the app environment.</li><li>Restart the app and open the sign-in page.</li></ol><p className="mt-5 text-sm text-slate-500">See README.md for local and hosted setup instructions.</p></main>;
+}
