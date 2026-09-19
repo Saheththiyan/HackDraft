@@ -1,0 +1,8 @@
+"use client";
+import { useActionState } from "react";
+import { updateCompetition } from "@/app/dashboard/actions";
+import { Button } from "@/components/button";
+export function CompetitionDetails({ competition }: { competition: { id: string; name: string; description: string; event_date: string | null } }) {
+  const [state, action, pending] = useActionState(async (_state: { error?: string | null }, data: FormData) => updateCompetition(competition.id, data), { error: undefined as string | null | undefined });
+  return <details className="panel p-6"><summary className="cursor-pointer font-semibold">Competition details</summary><form action={action} className="mt-5 space-y-4"><div><label className="mb-2 block text-sm" htmlFor="competition-name">Name</label><input id="competition-name" name="name" className="input" defaultValue={competition.name} maxLength={200} required /></div><div><label className="mb-2 block text-sm" htmlFor="competition-date">Event date</label><input id="competition-date" name="event_date" type="date" className="input" defaultValue={competition.event_date ?? ""} /></div><div><label className="mb-2 block text-sm" htmlFor="competition-description">Description</label><textarea id="competition-description" name="description" className="input min-h-24" defaultValue={competition.description} maxLength={10000} /></div>{state.error && <p role="alert" className="text-sm text-rose-300">{state.error}</p>}{state.error === null && <p role="status" className="text-sm text-emerald-300">Details saved.</p>}<Button disabled={pending}>{pending ? "Saving…" : "Save details"}</Button></form></details>;
+}

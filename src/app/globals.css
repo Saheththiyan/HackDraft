@@ -6,3 +6,4 @@ body { background: #090f1b; color: #e2e8f0; font-family: Arial, Helvetica, sans-
   .eyebrow { @apply text-xs font-semibold uppercase tracking-widest text-emerald-400; }
   .input { @apply w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-3 text-slate-100 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400; }
 }
+@layer components { .small-action { @apply rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40; } }
