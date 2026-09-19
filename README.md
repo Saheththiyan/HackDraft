@@ -25,7 +25,7 @@ Everyone shares these credentials. Author labels and individual permissions are 
 
 ## Hosted setup
 
-1. Create a Supabase project and apply `supabase/migrations/202609180001_foundation.sql` through its SQL editor, or link the CLI and run `npx supabase db push`.
+1. Create a Supabase project and apply both files in `supabase/migrations/` in filename order through its SQL editor, or link the CLI and run `npx supabase db push`.
 2. In Auth settings, **disable Allow new users to sign up** and leave email/password login enabled. Local config does not automatically configure a hosted project's Auth settings.
 3. Create and confirm the team user administratively, then insert the workspace as above.
 4. Deploy this repository to Vercel. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Use a publishable or legacy anon key, never a secret/service-role key.
