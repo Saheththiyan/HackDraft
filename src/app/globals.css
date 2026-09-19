@@ -51,7 +51,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .page-hero > * { position: relative; z-index: 1; }
 .hero-label { display: inline-flex; align-items: center; gap: .55rem; color: var(--accent); font-size: .72rem; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; }
 .hero-label::before { content: ""; height: .45rem; width: .45rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--accent) 12%, transparent); }
-.hero-title { max-width: 42rem; font-size: clamp(2.15rem, 4vw, 3.45rem); font-weight: 700; letter-spacing: -.06em; line-height: 1.1; }
+.hero-title { max-width: 42rem; overflow-wrap: anywhere; font-size: clamp(2.15rem, 4vw, 3.45rem); font-weight: 700; letter-spacing: -.06em; line-height: 1.1; }
 .hero-subtitle { max-width: 38rem; color: var(--muted); font-size: .95rem; line-height: 1.7; }
 .hero-metrics { display: flex; flex-wrap: wrap; gap: .6rem; }
 .metric-chip { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--surface) 85%, transparent); padding: .48rem .75rem; color: var(--muted); font-size: .75rem; }
@@ -72,6 +72,100 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .auth-art::after { content: ""; position: absolute; left: -5rem; bottom: -11rem; height: 20rem; width: 20rem; border: 1px dashed #71dcba55; border-radius: 50%; }
 .auth-step { border-top: 1px solid #ffffff26; padding: .9rem 0; color: #b3cfc9; font-size: .8rem; }
 .auth-step strong { margin-right: .65rem; color: #7de6c2; font-family: "HackDraft Mono", monospace; }
+
+/* Field notes, document tabs, and a visible path from evidence to submission. */
+.workspace-intro { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: 3rem; padding: 1.5rem 0 2.5rem; border-bottom: 1px solid var(--line); }
+.workspace-copy .hero-title { font-size: 1.2rem; letter-spacing: -.025em; }
+.workspace-manifesto { margin-top: 1.2rem; font-size: clamp(2.5rem, 4.4vw, 4rem); font-weight: 700; line-height: 1.1; letter-spacing: -.065em; }
+.workspace-manifesto em { color: var(--accent); font-family: Georgia, serif; font-weight: 400; }
+.workspace-count { align-self: center; color: var(--muted); font-size: .72rem; }
+.workspace-count strong { color: var(--ink); }
+.workspace-copy .cta-link { gap: 1.2rem; }
+.solve-diagram { position: relative; min-width: 0; padding: 1.5rem 2rem 2rem; border: 1px solid var(--line); border-radius: 1.25rem; background: radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 14px 14px, var(--surface-soft); }
+.diagram-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; color: var(--muted); font-family: "HackDraft Mono", monospace; font-size: .58rem; letter-spacing: .13em; }
+.diagram-heading > :last-child { color: var(--accent); font-size: 1.4rem; }
+.diagram-note { position: relative; margin-right: 2rem; padding: 1.1rem; transform: rotate(-3deg); border: 1px solid #34564e; border-radius: .8rem; background: #112b28; color: #d9f0e6; box-shadow: 5px 8px 0 color-mix(in srgb, var(--accent) 10%, transparent); }
+.diagram-file { display: block; font-family: "HackDraft Mono", monospace; font-size: .55rem; letter-spacing: .1em; }
+.diagram-note .diagram-file { color: #a9c6bc; }
+.diagram-note code { display: block; margin-top: 1.2rem; font-size: .7rem; }
+.diagram-note code span { margin-right: .4rem; color: #85efc2; }
+.diagram-lines { display: grid; gap: .35rem; margin: .9rem 0; }
+.diagram-lines i { height: 3px; width: 70%; border-radius: 9px; background: #34564e; }
+.diagram-lines i:nth-child(2) { width: 86%; }
+.diagram-lines i:nth-child(3) { width: 48%; }
+.diagram-tag { display: inline-block; border: 1px solid #466354; border-radius: .3rem; padding: .2rem .4rem; color: #aee9cb; font-family: "HackDraft Mono", monospace; font-size: .56rem; }
+.diagram-connector { display: flex; align-items: center; justify-content: center; gap: .65rem; height: 2.8rem; color: var(--muted); font-family: "HackDraft Mono", monospace; font-size: .6rem; }
+.diagram-connector > :first-child { font-size: 1.5rem; color: var(--accent); }
+.diagram-document { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-left: 1.7rem; padding: 1.1rem; transform: rotate(2deg); border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); box-shadow: 0 8px 20px -12px #0005; }
+.diagram-document .diagram-file { color: var(--muted); }
+.diagram-document strong { display: block; margin-top: .5rem; font-size: .85rem; letter-spacing: -.03em; }
+.diagram-check { display: grid; width: 1.6rem; height: 1.6rem; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.diagram-document-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; width: 100%; border-top: 1px solid var(--line); padding-top: .7rem; font-size: .53rem; color: var(--muted); }
+.diagram-document-footer > :last-child { color: var(--accent); font-family: "HackDraft Mono", monospace; }
+.competition-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.competition-card { display: flex; flex-direction: column; gap: 1rem; min-width: 0; padding: 1.4rem; border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: .4rem 1.1rem 1.1rem 1.1rem; background: var(--surface); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.competition-card:nth-child(3n + 2) { border-top-color: #b99456; }
+.competition-card:nth-child(3n) { border-top-color: #9384bb; }
+.competition-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--accent); }
+.competition-card:focus-visible, .item-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.competition-card-top { display: flex; align-items: center; justify-content: space-between; }
+.competition-card-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.competition-card-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .6rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .62rem; }
+.competition-card-footer > :last-child { color: var(--accent); }
+.creation-panel { scroll-margin-top: 2rem; border-top: 3px solid var(--accent); }
+.creation-heading { display: flex; align-items: center; justify-content: space-between; }
+.creation-heading > span { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border: 1px dashed var(--accent); border-radius: 50%; color: var(--accent); }
+.readiness-board { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--line); border-radius: 1.1rem; background: var(--surface); }
+.readiness-intro { padding: 1.3rem 1.5rem; }
+.readiness-intro > strong { display: block; margin-top: .5rem; font-size: .85rem; }
+.readiness-track { height: .3rem; margin-top: .8rem; overflow: hidden; border-radius: 5px; background: var(--surface-deep); }
+.readiness-track > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.readiness-stage { display: flex; align-items: center; justify-content: center; gap: .8rem; border-left: 1px solid var(--line); padding: 1rem; }
+.stage-marker { align-self: flex-start; margin-top: .7rem; color: var(--faint); font-family: "HackDraft Mono", monospace; font-size: .6rem; }
+.readiness-stage strong { display: block; font-size: 2rem; line-height: 1.2; letter-spacing: -.06em; }
+.readiness-stage div > span { display: block; margin-top: .25rem; color: var(--muted); font-size: .7rem; }
+.readiness-stage[data-ready="true"] { background: var(--accent-soft); }
+.readiness-stage[data-ready="true"] strong { color: var(--accent); }
+.library-count { margin-left: .4rem; color: var(--muted); font-family: "HackDraft Mono", monospace; font-size: .85rem; font-weight: 400; }
+.library-tools { margin: 1.3rem 0; }
+.library-search { display: flex; align-items: center; gap: .75rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); padding: .8rem 1rem; }
+.library-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.library-search svg { width: 1.1rem; height: 1.1rem; flex: none; color: var(--muted); }
+.library-search input { width: 100%; min-width: 0; outline: none; font-size: .8rem; }
+.library-search input::placeholder { color: var(--muted); }
+.library-filters { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .8rem; }
+.library-filters button { display: flex; align-items: center; gap: .45rem; border: 1px solid transparent; border-radius: .5rem; padding: .5rem .65rem; color: var(--muted); font-size: .7rem; cursor: pointer; }
+.library-filters button > span { font-family: "HackDraft Mono", monospace; font-size: .62rem; opacity: .8; }
+.library-filters button[aria-pressed="true"] { border-color: var(--line); background: var(--surface); color: var(--accent); font-weight: 700; }
+.library-filters button:hover { background: var(--surface-soft); }
+.library-filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.challenge-card { border-radius: .8rem; }
+.challenge-glyph { display: grid; height: 3rem; width: 3rem; flex: none; place-items: center; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface-soft); color: var(--accent); font-family: "HackDraft Mono", monospace; font-size: .78rem; }
+.challenge-points { display: flex; flex: none; flex-direction: column; align-items: flex-end; gap: .25rem; }
+.challenge-points strong { font-family: "HackDraft Mono", monospace; font-size: .85rem; }
+.challenge-points span { color: var(--muted); font-size: .5rem; letter-spacing: .1em; }
+.library-empty { padding: 2.5rem 1.5rem; border: 1px dashed var(--line); border-radius: 1rem; background: color-mix(in srgb, var(--surface) 60%, transparent); text-align: center; }
+.library-empty > span { display: block; margin-bottom: 1rem; color: var(--accent); font-family: "HackDraft Mono", monospace; font-size: 2rem; }
+.library-empty h3 { font-size: 1rem; font-weight: 700; letter-spacing: -.03em; }
+.library-empty p { max-width: 25rem; margin: .7rem auto 0; color: var(--muted); font-size: .8rem; line-height: 1.8; }
+:root[data-theme="dark"] .status-pill[data-status="review"] { color: #ebbd76; }
+@media (max-width: 767px) {
+  .workspace-intro { grid-template-columns: 1fr; gap: 2rem; padding-top: 0; }
+  .solve-diagram { max-width: 32rem; width: 100%; justify-self: center; }
+  .readiness-board { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .readiness-intro { grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+  .readiness-stage { padding: 1rem .65rem; gap: .5rem; }
+  .readiness-stage:nth-child(2) { border-left: 0; }
+  .stage-marker { display: none; }
+}
+@media (max-width: 480px) {
+  .competition-grid { grid-template-columns: 1fr; }
+  .solve-diagram { padding: 1.1rem; }
+  .diagram-note { margin-right: 1rem; }
+  .diagram-document { margin-left: .7rem; }
+  .challenge-card { gap: .7rem; padding: 1rem; }
+  .challenge-glyph { height: 2.3rem; width: 2.3rem; }
+}
 
 .prose-report { color: var(--ink); font-size: .9rem; line-height: 1.8; }
 .prose-report p { margin: .7rem 0; }
