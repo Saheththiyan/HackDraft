@@ -70,6 +70,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .status-pill[data-status="review"] { background: color-mix(in srgb, #e7a73f 10%, var(--surface)); color: #aa6712; }
 .auth-shell { min-height: 100vh; }
 .auth-art { position: relative; overflow: hidden; border-radius: 1.8rem; background: linear-gradient(145deg, #0d282e, #0a1b25); color: #e9fff5; }
+.auth-logo-shell { width: min(100%, 23rem); border: 1px solid #ffffff35; border-radius: 1rem; background: #f5fbfa; padding: .35rem .8rem; box-shadow: 0 16px 28px -20px #0009; }
 .auth-logo { filter: drop-shadow(0 12px 20px #05151c66); }
 .auth-art::before { content: ""; position: absolute; top: -8rem; right: -9rem; height: 28rem; width: 28rem; border: 1px solid #71dcba55; border-radius: 50%; box-shadow: 0 0 0 3rem #6bd5af12, 0 0 0 6rem #6bd5af0b; }
 .auth-art::after { content: ""; position: absolute; left: -5rem; bottom: -11rem; height: 20rem; width: 20rem; border: 1px dashed #71dcba55; border-radius: 50%; }
