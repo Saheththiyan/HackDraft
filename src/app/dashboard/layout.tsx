@@ -1,10 +1,12 @@
 import { requireUser } from "@/lib/auth";
 import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   await requireUser();
-  return <div className="mx-auto max-w-6xl px-6 py-8"><header className="flex items-center justify-between border-b border-slate-800 pb-6"><span className="text-xl font-bold">Hack<span className="text-emerald-400">Draft</span></span><form action={signOut}><Button variant="outline">Sign out</Button></form></header>{children}</div>;
+  return <div className="app-shell mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8"><header className="topbar relative z-10 flex flex-wrap items-center justify-between gap-3 py-5"><Link href="/dashboard" className="brand-lockup" aria-label="HackDraft dashboard"><span className="brand-mark" aria-hidden="true">H/D</span><span className="brand-name"><span>Hack<em>Draft</em></span><small>CTF workspace</small></span></Link><nav aria-label="Main navigation" className="hidden items-center gap-2 md:flex"><Link href="/dashboard" className="nav-pill">Workspace</Link><span className="nav-separator"/><span className="nav-hint">Capture → Draft → Deliver</span></nav><div className="flex items-center gap-2"><ThemeToggle /><form action={signOut}><Button variant="outline">Sign out</Button></form></div></header>{children}</div>;
 }
