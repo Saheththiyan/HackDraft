@@ -33,7 +33,9 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 .topbar { border-bottom: 1px solid var(--line); }
 .brand-lockup { display: inline-flex; align-items: center; gap: .75rem; color: var(--ink); }
-.brand-mark { display: grid; height: 2.65rem; width: 2.65rem; flex: none; place-items: center; border-radius: .9rem; background: linear-gradient(145deg, #8eeec8, #29ae8e); color: #0c3128; font-size: .7rem; font-weight: 700; letter-spacing: -.07em; box-shadow: 0 9px 20px -12px var(--accent); }
+.brand-mark-image { position: relative; display: block; height: 2.65rem; width: 2.65rem; flex: none; overflow: hidden; border-radius: .9rem; background: linear-gradient(145deg, #8eeec8, #29ae8e); box-shadow: 0 9px 20px -12px var(--accent); }
+.brand-mark-image-art { position: absolute; top: 50%; left: 50%; width: 10rem; max-width: none; height: auto; transform: translate(-50%, -50%); }
+.brand-lockup-image { display: block; width: min(100%, 22rem); height: auto; object-fit: contain; object-position: left center; }
 .brand-name { display: flex; flex-direction: column; font-size: 1.02rem; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
 .brand-name em { color: var(--accent); font-style: normal; }
 .brand-name small { margin-top: .25rem; color: var(--faint); font-size: .61rem; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; }
@@ -68,6 +70,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .status-pill[data-status="review"] { background: color-mix(in srgb, #e7a73f 10%, var(--surface)); color: #aa6712; }
 .auth-shell { min-height: 100vh; }
 .auth-art { position: relative; overflow: hidden; border-radius: 1.8rem; background: linear-gradient(145deg, #0d282e, #0a1b25); color: #e9fff5; }
+.auth-logo { filter: drop-shadow(0 12px 20px #05151c66); }
 .auth-art::before { content: ""; position: absolute; top: -8rem; right: -9rem; height: 28rem; width: 28rem; border: 1px solid #71dcba55; border-radius: 50%; box-shadow: 0 0 0 3rem #6bd5af12, 0 0 0 6rem #6bd5af0b; }
 .auth-art::after { content: ""; position: absolute; left: -5rem; bottom: -11rem; height: 20rem; width: 20rem; border: 1px dashed #71dcba55; border-radius: 50%; }
 .auth-step { border-top: 1px solid #ffffff26; padding: .9rem 0; color: #b3cfc9; font-size: .8rem; }
