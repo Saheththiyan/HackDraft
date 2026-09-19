@@ -83,6 +83,9 @@ export async function removeEvidence(challengeId: string, expectedVersion: numbe
   const { supabase } = await workspaceContext();
   const { data, error } = await supabase.rpc("remove_evidence", { p_challenge_id: challengeId, p_version: expectedVersion, p_evidence_id: evidenceId });
   if (error || !Array.isArray(data) || data.length !== 1 || typeof data[0].next_version !== "number") return failure(error);
+  const { data: referenced, error: referenceError } = await supabase.from("snapshot_assets").select("report_id").eq("storage_path", data[0].removed_path).limit(1);
+  if (referenceError) return { ok: false, reason: "failed", message: "Image removed from the challenge, but report retention could not be checked. Reload to continue." };
+  if (referenced?.length) return { ok: true, version: data[0].next_version };
   const { error: storageError } = await supabase.storage.from("evidence").remove([data[0].removed_path]);
   if (storageError) return { ok: false, reason: "failed", message: "Image removed from the challenge, but file cleanup failed. Reload to continue." };
   return { ok: true, version: data[0].next_version };
