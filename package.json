@@ -13,6 +13,7 @@
     "db:test": "supabase test db",
     "test:e2e": "playwright test",
     "test:ai": "node --test tests/gemini.test.mjs",
+    "test:ai:live": "RUN_LIVE_GEMINI_TEST=1 playwright test tests/gemini-live.spec.ts",
     "db:stop": "supabase stop"
   },
   "dependencies": {

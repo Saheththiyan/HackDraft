@@ -8,7 +8,7 @@ const sectionIds = ["overview", "observations", "solution", "result", "tools"];
  */
 export async function requestGeminiDraft({ key, model, fields }, request = fetch) {
   const schema = {
-    type: "object", additionalProperties: false,
+    type: "object",
     properties: Object.fromEntries(sectionIds.map(id => [id, { type: "string" }])),
     required: sectionIds,
   };
@@ -27,6 +27,16 @@ export async function requestGeminiDraft({ key, model, fields }, request = fetch
     if (!response.ok) {
       if (response.status === 429) return { ok: false, message: "Gemini rate limit reached. Try again later." };
       if (response.status === 401 || response.status === 403) return { ok: false, message: "Gemini rejected the API key. Check GEMINI_API_KEY." };
+      if (response.status === 404) {
+        const body = await response.json().catch(() => null);
+        const detail = typeof body?.error?.message === "string" ? body.error.message.replaceAll(key, "[redacted]").slice(0, 300) : "Model unavailable.";
+        return { ok: false, message: `Gemini model ${model} is unavailable: ${detail}` };
+      }
+      if (response.status === 400) {
+        const body = await response.json().catch(() => null);
+        const detail = typeof body?.error?.message === "string" ? body.error.message.replaceAll(key, "[redacted]").slice(0, 300) : "Invalid request.";
+        return { ok: false, message: `Gemini rejected the request: ${detail}` };
+      }
       return { ok: false, message: `Gemini could not generate a draft (HTTP ${response.status}). Try again later.` };
     }
     const payload = await response.json();

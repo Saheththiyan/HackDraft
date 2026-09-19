@@ -21,7 +21,7 @@ export async function generateWriteupDraft(challengeId: string, version: number)
   const { supabase } = await requireUser();
   const key = process.env.GEMINI_API_KEY;
   if (!key) return { ok: false, message: "Gemini is not configured. Add GEMINI_API_KEY to the server environment and restart the app." };
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   if (!/^[a-zA-Z0-9._-]+$/.test(model)) return { ok: false, message: "Invalid GEMINI_MODEL configuration." };
 
   const { data: challenge, error } = await supabase.from("challenges")
