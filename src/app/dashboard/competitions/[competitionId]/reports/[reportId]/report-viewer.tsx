@@ -10,7 +10,7 @@ import { sectionTitles, type ReportSnapshot } from "@/lib/writeup";
 export function ReportViewer({ reportId, createdAt, content }: { reportId: string; createdAt: string; content: ReportSnapshot }) {
   const [supabase] = useState(createBrowserSupabase);
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"pdf" | "docx" | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
@@ -21,8 +21,8 @@ export function ReportViewer({ reportId, createdAt, content }: { reportId: strin
     })).then(entries => { if (active) setUrls(Object.fromEntries(entries)); });
     return () => { active = false; };
   }, [content, supabase]);
-  async function downloadPdf() {
-    setBusy(true); setError("");
+  async function download(format: "pdf" | "docx") {
+    setBusy(format); setError("");
     try {
       const evidence = content.challenges.flatMap(challenge => challenge.evidence);
       const imageData: Record<string, string> = {};
@@ -32,17 +32,18 @@ export function ReportViewer({ reportId, createdAt, content }: { reportId: strin
         const blob = data.type === "image/webp" ? await convertWebp(data) : data;
         imageData[item.id] = await asDataUrl(blob);
       }
-      const { generateReportPdf } = await import("@/components/report/pdf-export");
-      const blob = await generateReportPdf(content, imageData);
+      const blob = format === "pdf"
+        ? await import("@/components/report/pdf-export").then(module => module.generateReportPdf(content, imageData))
+        : await import("@/components/report/docx-export").then(module => module.generateReportDocx(content, imageData));
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
-      anchor.href = url; anchor.download = `${safeFilename(content.title)}-report.pdf`;
+      anchor.href = url; anchor.download = `${safeFilename(content.title)}-report.${format}`;
       document.body.appendChild(anchor); anchor.click(); anchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not generate the PDF. Try again."); }
-    finally { setBusy(false); }
+    } catch (caught) { setError(caught instanceof Error ? caught.message : `Could not generate the ${format.toUpperCase()}. Try again.`); }
+    finally { setBusy(null); }
   }
-  return <div><div className="mt-7 flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow">Saved report · {new Date(createdAt).toLocaleString()}</p><h1 className="mt-3 text-4xl font-bold">{content.title}</h1><p className="mt-3 text-slate-400">{content.challenges.length} reviewed {content.challenges.length === 1 ? "challenge" : "challenges"} in this snapshot.</p></div><Button onClick={() => void downloadPdf()} disabled={busy}>{busy ? "Preparing PDF…" : "Download PDF"}</Button></div>
+  return <div><div className="mt-7 flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow">Saved report · {new Date(createdAt).toLocaleString()}</p><h1 className="mt-3 text-4xl font-bold">{content.title}</h1><p className="mt-3 text-slate-400">{content.challenges.length} reviewed {content.challenges.length === 1 ? "challenge" : "challenges"} in this snapshot.</p></div><div className="flex gap-3"><Button onClick={() => void download("pdf")} disabled={busy !== null}>{busy === "pdf" ? "Preparing PDF…" : "Download PDF"}</Button><Button variant="outline" onClick={() => void download("docx")} disabled={busy !== null}>{busy === "docx" ? "Preparing DOCX…" : "Download DOCX"}</Button></div></div>
     {error && <p role="alert" className="mt-5 rounded-lg border border-rose-500/40 p-4 text-rose-300">{error}</p>}
     <section className="panel mt-10 p-8"><p className="eyebrow">Report preview</p>{content.description && <p className="mt-4 whitespace-pre-wrap text-slate-300">{content.description}</p>}<h2 className="mt-8 text-xl font-semibold">Contents</h2><ol className="mt-4 list-inside list-decimal space-y-2 text-slate-300">{content.challenges.map(challenge => <li key={challenge.id}><a className="hover:text-emerald-300" href={`#challenge-${challenge.id}`}>{challenge.name}</a></li>)}</ol></section>
     {content.challenges.map((challenge, index) => <article id={`challenge-${challenge.id}`} className="panel mt-6 p-8" key={challenge.id}><p className="eyebrow">Challenge {index + 1} · {challenge.category || "General"}</p><h2 className="mt-3 text-2xl font-bold">{challenge.name}</h2><p className="mt-2 text-sm text-slate-400">{[challenge.points != null ? `${challenge.points} points` : "", challenge.author ? `Solved by ${challenge.author}` : ""].filter(Boolean).join(" · ")}</p>

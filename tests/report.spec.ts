@@ -30,7 +30,7 @@ test.afterAll(async () => {
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) throw error;
 });
-test("manual write-up becomes a reviewed, downloadable, immutable PDF report", async ({ page }) => {
+test("manual write-up becomes a reviewed, downloadable, immutable PDF and DOCX report", async ({ page }) => {
   test.setTimeout(120_000);
   await login(page);
   await page.getByLabel("Competition name").fill("Practice CTF");
@@ -83,6 +83,19 @@ test("manual write-up becomes a reviewed, downloadable, immutable PDF report", a
   expect(text).toContain("exiftool evidence.png");
   const images = execFileSync("pdfimages", ["-list", path!], { encoding: "utf8" });
   expect(images.split("\n").length).toBeGreaterThan(2);
+  const docxDownloadPromise = page.waitForEvent("download", { timeout: 90_000 });
+  await page.getByRole("button", { name: "Download DOCX" }).click();
+  const docxDownload = await docxDownloadPromise;
+  expect(docxDownload.suggestedFilename()).toBe("practice-ctf-report.docx");
+  const docxPath = await docxDownload.path();
+  expect(docxPath).toBeTruthy();
+  const documentXml = execFileSync("unzip", ["-p", docxPath!, "word/document.xml"], { encoding: "utf8" });
+  expect(documentXml).toContain("Hidden image");
+  expect(documentXml).toContain("CTF{manual-report}");
+  expect(documentXml).toContain("exiftool evidence.png");
+  expect(documentXml).toContain("Flag recovery and result");
+  const docxEntries = execFileSync("unzip", ["-Z1", docxPath!], { encoding: "utf8" });
+  expect(docxEntries).toContain("word/media/");
   await page.goto(`/dashboard/competitions/${competitionId}/challenges/${challengeId}`);
   page.on("dialog", dialog => dialog.accept());
   await page.getByRole("button", { name: "Remove" }).click();

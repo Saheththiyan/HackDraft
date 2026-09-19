@@ -1,6 +1,6 @@
 # HackDraft
 
-Private CTF documentation workspace. Capture a challenge once, generate editable write-up sections from your solve notes with Gemini, review them, and assemble saved PDF reports.
+Private CTF documentation workspace. Capture a challenge once, generate editable write-up sections from your solve notes with Gemini, review them, and assemble saved PDF or DOCX reports.
 
 ## Requirements
 
@@ -39,9 +39,9 @@ The app does not expose signup, auto-create workspaces, or use service-role acce
 2. Select **Generate / review write-up**, then **Generate from solve notes**. Gemini uses the saved challenge prompt, solve notes, commands, flag, and screenshot captions to propose the five report sections. Preview and apply the draft, edit any mistakes, and attach screenshots to the relevant sections. Generation does not overwrite your current text until you choose **Use this draft**.
 3. The write-up saves automatically after edits. Select **Approve write-up** when it is ready. Changing the challenge or its screenshots later clears the reviewed status until you approve it again.
 4. Open **Reports** from the competition page. Select reviewed challenges, arrange their order, and save a report snapshot. The snapshot keeps the write-up text and referenced screenshots as they were at creation, even if the live challenge is edited or its screenshot is removed later.
-5. Open a saved snapshot to preview it and select **Download PDF**. The browser downloads the private screenshots and builds an A4 report with a cover, contents, challenge summary, and write-up sections. The PDF is generated locally in the signed-in browser; no report file is stored in Supabase.
+5. Open a saved snapshot to preview it and select **Download PDF** or **Download DOCX**. The browser downloads the private screenshots and builds an A4 report with a cover, contents, challenge summary, and write-up sections. Both files are generated locally in the signed-in browser; no report file is stored in Supabase. The DOCX is editable in Word-compatible applications.
 
-For a fresh local setup, follow **Local setup** first. For an existing local database, start Supabase and apply the new migration with `npx supabase migration up --local --yes` before using write-ups. To enable generation, set `GEMINI_API_KEY` in `.env.local` or the server deployment environment and restart the app; `GEMINI_MODEL` defaults to `gemini-3.6-flash`. The API key stays on the server. Clicking Generate sends the saved challenge prompt, solve notes, commands, recorded flag, and screenshot captions to Gemini. Generated text must be checked before approval; screenshot files are not sent to Gemini. Manual editing works without an API key. PDF export works best in a current Chromium, Firefox, or Safari browser. DOCX export is planned for a later step.
+For a fresh local setup, follow **Local setup** first. For an existing local database, start Supabase and apply the new migration with `npx supabase migration up --local --yes` before using write-ups. To enable generation, set `GEMINI_API_KEY` in `.env.local` or the server deployment environment and restart the app; `GEMINI_MODEL` defaults to `gemini-3.6-flash`. The API key stays on the server. Clicking Generate sends the saved challenge prompt, solve notes, commands, recorded flag, and screenshot captions to Gemini. Generated text must be checked before approval; screenshot files are not sent to Gemini. Manual editing works without an API key. Browser export works best in a current Chromium, Firefox, or Safari browser.
 
 ## Checks
 
@@ -53,7 +53,7 @@ For a fresh local setup, follow **Local setup** first. For an existing local dat
 - `npm run db:test` (requires the running local Supabase stack)
 - `npx playwright install chromium`, then `npm run test:e2e` (requires local Supabase; creates and cleans up temporary test accounts)
 
-The 66-case transactional pgTAP suite covers owner access, unrelated-account isolation, private storage, administrative provisioning, parent/workspace consistency, revision approval, and immutable report snapshots. Browser tests cover login, invalid credentials, sign out, unauthenticated dashboard redirects, account isolation, challenge capture, screenshots, stale-tab conflicts, and the full write-up-to-PDF workflow.
+The 66-case transactional pgTAP suite covers owner access, unrelated-account isolation, private storage, administrative provisioning, parent/workspace consistency, revision approval, and immutable report snapshots. Browser tests cover login, invalid credentials, sign out, unauthenticated dashboard redirects, account isolation, challenge capture, screenshots, stale-tab conflicts, and the full write-up-to-PDF/DOCX workflow.
 
 ## Data and storage contract
 
