@@ -47,7 +47,14 @@ test("manual write-up becomes a reviewed, downloadable, immutable PDF report", a
   const image = await page.screenshot();
   await page.getByLabel("Choose screenshots").setInputFiles({ name: "evidence.png", mimeType: "image/png", buffer: image });
   await expect(page.getByText("Screenshots 1")).toBeVisible();
-  await page.getByRole("link", { name: /Edit write-up/ }).click();
+  await page.getByLabel("How we solved it").fill("I inspected the file metadata with exiftool and found the flag in the comment field.");
+  await page.getByText("Used an LLM to solve it? Get the procedure from that chat").click();
+  await expect(page.getByText(/Using our conversation about this CTF challenge/)).toBeVisible();
+  await page.getByRole("button", { name: /Generate \/ review write-up/ }).click();
+  await expect(page).toHaveURL(/\/writeup$/);
+  const { data: savedChallenge } = await admin.from("challenges").select("source_notes").eq("id", challengeId).single();
+  expect(savedChallenge?.source_notes).toContain("inspected the file metadata");
+  await expect(page.getByRole("button", { name: "Generate from solve notes" })).toBeVisible();
   await expect(page.getByLabel("Challenge overview content")).toContainText("Find the flag");
   await page.getByRole("navigation", { name: "Write-up sections" }).getByRole("button", { name: /Solution steps/ }).click();
   await page.getByLabel("Solution steps content").fill("1. Inspect the file metadata.\n2. Run `exiftool evidence.png`.\n\n```bash\nexiftool evidence.png\n```\n\nThe comment field revealed the flag.");

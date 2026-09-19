@@ -1,24 +1,29 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type DragEvent, type ClipboardEvent } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { attachEvidence, removeEvidence, saveChallenge, saveEvidenceOrder } from "@/app/dashboard/actions";
 import { Button } from "@/components/button";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 import type { ChallengeInput, ChallengeRecord, Evidence } from "@/lib/capture";
 
 const acceptedTypes: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+const solveHistoryPrompt = "Using our conversation about this CTF challenge, write a factual, chronological account of how we solved it. Include the initial clues, each important step, the exact commands or code that mattered, what their output showed, how we recovered the flag, and any uncertainty. Separate attempts that failed from the final working method. Do not invent missing steps or claim you ran tools you did not run. Return plain text I can paste into HackDraft's ‘How we solved it’ field.";
 type Status = "saved" | "unsaved" | "saving" | "conflict" | "error";
 function draftOf(challenge: ChallengeRecord): ChallengeInput {
   const { name, category, points, author_label, description, source_notes, commands, flag } = challenge;
   return { name, category, points, author_label, description, source_notes, commands, flag };
 }
 export function ChallengeEditor({ challenge }: { challenge: ChallengeRecord }) {
+  const router = useRouter();
   const [draft, setDraft] = useState<ChallengeInput>(() => draftOf(challenge));
   const [evidence, setEvidence] = useState<Evidence[]>(challenge.evidence);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("saved");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
+  const [openingWriteup, setOpeningWriteup] = useState(false);
   const latest = useRef(draftOf(challenge));
   const saved = useRef(JSON.stringify(draftOf(challenge)));
   const savedEvidence = useRef(JSON.stringify(challenge.evidence.map(({ id, caption }) => ({ id, caption }))));
@@ -179,15 +184,24 @@ export function ChallengeEditor({ challenge }: { challenge: ChallengeRecord }) {
     finally { setBusy(false); }
   }
   const statusText = { saved: "Saved", unsaved: "Unsaved changes", saving: "Saving…", conflict: "Edit conflict", error: "Save failed" }[status];
-  return <div><div className="mt-3 flex flex-wrap items-center justify-between gap-3"><h1 className="text-4xl font-bold">{draft.name || "Untitled challenge"}</h1><div className="flex items-center gap-3"><span role="status" className={`text-sm ${status === "saved" ? "text-emerald-300" : status === "unsaved" || status === "saving" ? "text-amber-300" : "text-rose-300"}`}>{statusText}</span><Button variant="outline" onClick={() => void flush()} disabled={busy || status === "saving" || status === "saved" || status === "conflict"}>Save now</Button></div></div>
-    <p className="mt-3 text-slate-400">Capture the raw solution. The write-up editor and report builder come in the next steps.</p>
+  async function copySolvePrompt() {
+    try { await navigator.clipboard.writeText(solveHistoryPrompt); setPromptCopied(true); }
+    catch { setMessage("Could not copy the prompt. Select and copy it below instead."); }
+  }
+  async function openWriteup() {
+    setOpeningWriteup(true);
+    try { if (await flush()) router.push(`/dashboard/competitions/${challenge.competition_id}/challenges/${challenge.id}/writeup`); }
+    finally { setOpeningWriteup(false); }
+  }
+  return <div><div className="mt-3 flex flex-wrap items-center justify-between gap-3"><h1 className="text-4xl font-bold">{draft.name || "Untitled challenge"}</h1><div className="flex items-center gap-3"><span role="status" className={`text-sm ${status === "saved" ? "text-emerald-300" : status === "unsaved" || status === "saving" ? "text-amber-300" : "text-rose-300"}`}>{statusText}</span><Button variant="outline" onClick={() => void flush()} disabled={busy || status === "saving" || status === "saved" || status === "conflict"}>Save now</Button><Button onClick={() => void openWriteup()} disabled={busy || openingWriteup || status === "conflict"}>{openingWriteup ? "Opening…" : "Generate / review write-up →"}</Button></div></div>
+    <p className="mt-3 text-slate-400">Capture the solve once here, then generate and review the report write-up.</p>
     {message && <div role="alert" className="mt-6 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{message}{status === "error" && <button type="button" onClick={() => { if (savedEvidence.current !== JSON.stringify(evidence.map(({ id, caption }) => ({ id, caption })))) void updateImages(evidence); else if (saved.current !== JSON.stringify(latest.current)) void flush(); else window.location.reload(); }} className="ml-2 underline">Retry or reload</button>}{status === "conflict" && <button type="button" onClick={() => window.location.reload()} className="ml-2 underline">Reload latest</button>}</div>}
     <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]"><section className="panel space-y-6 p-6"><h2 className="text-xl font-semibold">Challenge details</h2>
       <Field label="Challenge name" id="challenge-name"><input id="challenge-name" className="input" value={draft.name} onChange={event => change("name", event.target.value)} maxLength={200} /></Field>
       <div className="grid gap-5 sm:grid-cols-2"><Field label="Category" id="category"><input id="category" className="input" value={draft.category} onChange={event => change("category", event.target.value)} maxLength={100} placeholder="Forensics, Web, Crypto…" /></Field><Field label="Points" id="points"><input id="points" type="number" min={0} max={1000000} className="input" value={draft.points ?? ""} onChange={event => change("points", event.target.value === "" ? null : Number(event.target.value))} /></Field></div>
       <Field label="Author name" id="author"><input id="author" className="input" value={draft.author_label} onChange={event => change("author_label", event.target.value)} maxLength={100} placeholder="Who solved it?" /></Field>
       <Field label="Challenge prompt or description" id="challenge-description"><textarea id="challenge-description" className="input min-h-28" value={draft.description} onChange={event => change("description", event.target.value)} maxLength={10000} placeholder="Paste the original challenge prompt…" /></Field>
-      <Field label="How we solved it" id="source-notes"><textarea id="source-notes" className="input min-h-64 font-mono text-sm" value={draft.source_notes} onChange={event => change("source_notes", event.target.value)} maxLength={100000} placeholder="Write rough notes: what you tried, what worked, and how you found the flag…" /></Field>
+      <div><Field label="How we solved it" id="source-notes"><textarea id="source-notes" className="input min-h-64 font-mono text-sm" value={draft.source_notes} onChange={event => change("source_notes", event.target.value)} maxLength={100000} placeholder="Write or paste the full solve: clues, steps, commands, outputs, and how you found the flag…" /></Field><p className="mt-2 text-sm text-slate-400">One detailed account is enough. Gemini will organize these notes into the report sections.</p><details className="mt-3 rounded-lg border border-slate-700 p-3 text-sm"><summary className="cursor-pointer font-medium text-emerald-300">Used an LLM to solve it? Get the procedure from that chat</summary><p className="mt-3 text-slate-400">Paste this prompt into the same chat, then paste its answer above. Review the answer against what you actually did.</p><p className="mt-3 select-text rounded-lg bg-slate-950 p-3 text-slate-300">{solveHistoryPrompt}</p><Button className="mt-3" variant="outline" onClick={() => void copySolvePrompt()}>{promptCopied ? "Prompt copied" : "Copy prompt"}</Button></details></div>
       <Field label="Commands, code, and output" id="commands"><textarea id="commands" className="input min-h-44 font-mono text-sm" value={draft.commands} onChange={event => change("commands", event.target.value)} maxLength={50000} placeholder="Keep exact commands and output here…" /></Field>
       <Field label="Flag (optional)" id="flag"><input id="flag" className="input font-mono" value={draft.flag} onChange={event => change("flag", event.target.value)} maxLength={2000} autoComplete="off" placeholder="CTF{...}" /></Field>
     </section><aside className="panel h-fit p-6" onDrop={onDrop} onDragOver={event => event.preventDefault()} onPaste={onPaste}><h2 className="text-xl font-semibold">Screenshots <span className="text-slate-500">{evidence.length}</span></h2><p className="mt-2 text-sm text-slate-400">Paste, drop, or select images. PNG, JPEG, and WebP up to 5 MB each.</p><input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple className="sr-only" aria-label="Choose screenshots" onChange={(event: ChangeEvent<HTMLInputElement>) => { if (event.target.files) void uploadFiles(event.target.files); }} /><Button className="mt-4 w-full" variant="outline" onClick={() => inputRef.current?.click()} disabled={busy || status === "conflict"}>{busy ? "Working…" : "Add screenshots"}</Button><div className="mt-6 space-y-5">{evidence.map((item, index) => <div key={item.id} className="rounded-xl border border-slate-700 p-3">{urls[item.id] ? <Image src={urls[item.id]} alt={item.caption || `Screenshot ${index + 1}`} width={640} height={360} unoptimized className="max-h-52 w-full rounded-lg object-contain" /> : <div className="rounded-lg bg-slate-800 p-8 text-center text-sm text-slate-400">Loading image…</div>}<label className="mt-3 block text-xs text-slate-400" htmlFor={`caption-${item.id}`}>Caption</label><input id={`caption-${item.id}`} className="input mt-1 text-sm" value={item.caption} onChange={event => { setEvidence(current => current.map(image => image.id === item.id ? { ...image, caption: event.target.value } : image)); setStatus("unsaved"); }} disabled={busy || status === "conflict"} onBlur={() => { if (savedEvidence.current !== JSON.stringify(evidence.map(({ id, caption }) => ({ id, caption })))) void updateImages(evidence); }} maxLength={500} placeholder="What does this show?" /><div className="mt-3 flex flex-wrap gap-2"><button type="button" className="small-action" disabled={busy || index === 0 || status === "conflict"} onClick={() => { const next = [...evidence]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; void updateImages(next); }}>↑ Up</button><button type="button" className="small-action" disabled={busy || index === evidence.length - 1 || status === "conflict"} onClick={() => { const next = [...evidence]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; void updateImages(next); }}>↓ Down</button><button type="button" className="small-action text-rose-300" disabled={busy || status === "conflict"} onClick={() => void deleteImage(item)}>Remove</button></div></div>)}{!evidence.length && <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">Drop images here as you solve the challenge.</div>}</div></aside></div>

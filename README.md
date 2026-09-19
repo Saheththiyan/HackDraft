@@ -1,6 +1,6 @@
 # HackDraft
 
-Private CTF documentation workspace. Steps 1–3 implement the private team workspace, competition dashboard, challenge capture with autosave and screenshot evidence, manual write-ups with review, and saved PDF reports. AI drafting and additional export formats are later steps.
+Private CTF documentation workspace. Capture a challenge once, generate editable write-up sections from your solve notes with Gemini, review them, and assemble saved PDF reports.
 
 ## Requirements
 
@@ -35,12 +35,13 @@ The app does not expose signup, auto-create workspaces, or use service-role acce
 
 ## Write-ups and reports
 
-1. Open a challenge and select **Write write-up**. Fill in the overview, solution steps, and result; context and lessons are optional. Markdown and fenced code blocks are supported. Attach any uploaded screenshots to the relevant section.
-2. The write-up saves automatically after edits. Select **Approve write-up** when it is ready. Changing the challenge or its screenshots later clears the reviewed status until you approve it again.
-3. Open **Reports** from the competition page. Select reviewed challenges, arrange their order, and save a report snapshot. The snapshot keeps the write-up text and referenced screenshots as they were at creation, even if the live challenge is edited or its screenshot is removed later.
-4. Open a saved snapshot to preview it and select **Download PDF**. The browser downloads the private screenshots and builds an A4 report with a cover, contents, challenge summary, and write-up sections. The PDF is generated locally in the signed-in browser; no report file is stored in Supabase.
+1. Open a challenge and record the solution in **How we solved it**. Include the meaningful steps and outputs. If you solved it in another LLM chat, use the copyable prompt beside this field to retrieve a chronological account and paste it here. Save the challenge first.
+2. Select **Edit write-up**, then **Generate from solve notes**. Gemini uses the saved challenge prompt, solve notes, commands, and flag to propose the five report sections. Preview and apply the draft, edit any mistakes, and attach screenshots to the relevant sections. Generation does not overwrite your current text until you choose **Use this draft**.
+3. The write-up saves automatically after edits. Select **Approve write-up** when it is ready. Changing the challenge or its screenshots later clears the reviewed status until you approve it again.
+4. Open **Reports** from the competition page. Select reviewed challenges, arrange their order, and save a report snapshot. The snapshot keeps the write-up text and referenced screenshots as they were at creation, even if the live challenge is edited or its screenshot is removed later.
+5. Open a saved snapshot to preview it and select **Download PDF**. The browser downloads the private screenshots and builds an A4 report with a cover, contents, challenge summary, and write-up sections. The PDF is generated locally in the signed-in browser; no report file is stored in Supabase.
 
-For a fresh local setup, follow **Local setup** first. For an existing local database, start Supabase and apply the new migration with `npx supabase migration up --local --yes` before using write-ups. PDF export works best in a current Chromium, Firefox, or Safari browser. DOCX export and Gemini-assisted drafting are planned for later steps.
+For a fresh local setup, follow **Local setup** first. For an existing local database, start Supabase and apply the new migration with `npx supabase migration up --local --yes` before using write-ups. To enable generation, set `GEMINI_API_KEY` in `.env.local` or the server deployment environment and restart the app; `GEMINI_MODEL` defaults to `gemini-2.5-flash`. The API key stays on the server. Clicking Generate sends the saved challenge prompt, solve notes, commands, recorded flag, and screenshot captions to Gemini. Generated text must be checked before approval; screenshot files are not sent to Gemini. Manual editing works without an API key. PDF export works best in a current Chromium, Firefox, or Safari browser. DOCX export is planned for a later step.
 
 ## Checks
 
@@ -62,4 +63,4 @@ Schema changes live in versioned migrations. Capture and report mutations use au
 
 The challenge editor accepts PNG/JPEG/WebP screenshots up to 5 MiB, by file selection, drag-and-drop, or paste. Captions save when you leave the field; a warning appears if you navigate away with unsaved edits. Screenshots are private and viewed through time-limited signed URLs.
 
-`GEMINI_API_KEY` and `GEMINI_MODEL` are reserved for step 4 and currently unused. Never expose AI credentials in `NEXT_PUBLIC_*` variables. `.env.local` is ignored by Git.
+`GEMINI_API_KEY` and `GEMINI_MODEL` configure server-side drafting. Never expose AI credentials in `NEXT_PUBLIC_*` variables. `.env.local` is ignored by Git.
