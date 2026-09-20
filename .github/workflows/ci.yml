@@ -44,6 +44,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install --global vercel
-      - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-      - run: vercel build --prod --token="$VERCEL_TOKEN"
-      - run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+      # Deploy without --prebuilt so Vercel builds this on its own
+      # infrastructure rather than on this runner: our env vars (Supabase
+      # URL/key, Gemini key) are marked Sensitive in the Vercel dashboard,
+      # and Sensitive values can only ever be injected by Vercel's own
+      # build/runtime — `vercel pull`/`vercel build` here would only ever
+      # see the literal placeholder string "[SENSITIVE]" for them.
+      - run: vercel deploy --prod --token="$VERCEL_TOKEN"
