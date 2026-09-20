@@ -33,8 +33,8 @@ export function ReportViewer({ reportId, createdAt, content }: { reportId: strin
         imageData[item.id] = await asDataUrl(blob);
       }
       const blob = format === "pdf"
-        ? await import("@/components/report/pdf-export").then(module => module.generateReportPdf(content, imageData))
-        : await import("@/components/report/docx-export").then(module => module.generateReportDocx(content, imageData));
+        ? await import("@/components/report/pdf-export").then(module => module.generateReportPdf(content, imageData, createdAt))
+        : await import("@/components/report/docx-export").then(module => module.generateReportDocx(content, imageData, createdAt));
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url; anchor.download = `${safeFilename(content.title)}-report.${format}`;
