@@ -30,24 +30,3 @@ jobs:
       - name: Stop disposable services
         if: always()
         run: npx supabase stop
-
-  deploy:
-    needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: production
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm install --global vercel
-      # Deploy without --prebuilt so Vercel builds this on its own
-      # infrastructure rather than on this runner: our env vars (Supabase
-      # URL/key, Gemini key) are marked Sensitive in the Vercel dashboard,
-      # and Sensitive values can only ever be injected by Vercel's own
-      # build/runtime — `vercel pull`/`vercel build` here would only ever
-      # see the literal placeholder string "[SENSITIVE]" for them.
-      - run: vercel deploy --prod --token="$VERCEL_TOKEN"
