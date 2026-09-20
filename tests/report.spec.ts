@@ -55,6 +55,19 @@ test("manual write-up becomes a reviewed, downloadable, immutable PDF and DOCX r
   const { data: savedChallenge } = await admin.from("challenges").select("source_notes").eq("id", challengeId).single();
   expect(savedChallenge?.source_notes).toContain("inspected the file metadata");
   await expect(page.getByRole("button", { name: "Generate from solve notes" })).toBeVisible();
+  let releaseGeneration!: () => void;
+  const generationHeld = new Promise<void>(resolve => { releaseGeneration = resolve; });
+  await page.route("**/writeup", async route => {
+    if (route.request().method() !== "POST") return route.continue();
+    await generationHeld;
+    await route.abort();
+  });
+  await page.getByRole("button", { name: "Generate from solve notes" }).click();
+  await expect(page.getByRole("status", { name: "Drafting your write-up" })).toBeVisible();
+  releaseGeneration();
+  await expect(page.getByRole("status", { name: "Drafting your write-up" })).toHaveCount(0);
+  await expect(page.locator("main p[role='alert']")).toContainText("Could not generate a draft");
+  await page.unroute("**/writeup");
   await expect(page.getByLabel("Challenge overview content")).toContainText("Find the flag");
   await page.getByRole("navigation", { name: "Write-up sections" }).getByRole("button", { name: /Solution steps/ }).click();
   await page.getByLabel("Solution steps content").fill("1. Inspect the file metadata.\n2. Run `exiftool evidence.png`.\n\n```bash\nexiftool evidence.png\n```\n\nThe comment field revealed the flag.");
