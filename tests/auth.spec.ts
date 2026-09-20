@@ -19,7 +19,10 @@ test.afterAll(async () => {
   }
 });
 test("private routes redirect, credentials are validated, and sign out removes access", async ({ page }) => {
-  await page.goto("/dashboard");
+  const response = await page.goto("/dashboard");
+  expect(response?.headers()["x-frame-options"]).toBe("DENY");
+  expect(response?.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(response?.headers()["cache-control"]).toContain("no-store");
   await expect(page).toHaveURL(/\/login$/);
   await page.getByLabel("Team email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill("wrong-password");

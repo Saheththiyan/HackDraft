@@ -41,3 +41,18 @@ test("network failures do not leak request details", async () => {
   assert.equal(result.ok, false);
   assert.equal(result.message.includes("test-key"), false);
 });
+
+test("provider errors cannot echo private notes or credentials", async () => {
+  for (const status of [400, 401, 403, 404, 500]) {
+    const result = await requestGeminiDraft({ key: "test-key", model, fields }, async () => Response.json({ error: { message: "test-key CTF{found} Ran exiftool" } }, { status }));
+    assert.equal(result.ok, false);
+    assert.doesNotMatch(result.message, /test-key|CTF\{found\}|Ran exiftool/);
+  }
+});
+
+test("truncated or safety-stopped drafts are rejected even with valid JSON", async () => {
+  for (const finishReason of ["MAX_TOKENS", "SAFETY"]) {
+    const result = await requestGeminiDraft({ key: "test-key", model, fields }, async () => Response.json({ candidates: [{ finishReason, content: { parts: [{ text: JSON.stringify(draft) }] } }] }));
+    assert.equal(result.ok, false);
+  }
+});

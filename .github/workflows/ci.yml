@@ -1,0 +1,33 @@
+name: Release checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ai
+      - run: npm run test:config
+      - run: npm audit --omit=dev --audit-level=high
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils unzip
+      - run: npx playwright install --with-deps chromium
+      - name: Start disposable local Supabase
+        run: npx supabase start > /dev/null
+      - run: npm run db:test
+      - name: Test production build and PDF/DOCX exports
+        run: npm run test:production
+      - name: Stop disposable services
+        if: always()
+        run: npx supabase stop

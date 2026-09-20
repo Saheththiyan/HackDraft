@@ -4,6 +4,9 @@ import { requireUser } from "@/lib/auth";
 import { emptySections, sectionsSchema } from "@/lib/writeup";
 import { WriteupEditor } from "./writeup-editor";
 
+// Allow the 45-second provider timeout to produce a recoverable response.
+export const maxDuration = 60;
+
 export default async function WriteupPage({ params }: { params: Promise<{ competitionId: string; challengeId: string }> }) {
   const { competitionId, challengeId } = await params;
   const { supabase } = await requireUser();

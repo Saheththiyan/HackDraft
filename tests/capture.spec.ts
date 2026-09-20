@@ -56,6 +56,12 @@ test("create competition, capture challenge, autosave, screenshots, and ordering
   await page.reload();
   await expect(page.getByLabel("How we solved it")).toHaveValue("Used strings, then inspected metadata.");
   await expect(page.getByLabel("Flag (optional)")).toHaveValue("CTF{example}");
+  await page.route("**/storage/v1/object/evidence/**", route => route.abort());
+  await page.getByLabel("Choose screenshots").setInputFiles({ name: "interrupted.png", mimeType: "image/png", buffer: tinyPng });
+  await expect(page.locator("main").getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add screenshots" })).toBeEnabled();
+  await expect(page.getByText("Screenshots 0")).toBeVisible();
+  await page.unroute("**/storage/v1/object/evidence/**");
   await page.getByLabel("Choose screenshots").setInputFiles([
     { name: "first.png", mimeType: "image/png", buffer: tinyPng },
     { name: "second.png", mimeType: "image/png", buffer: tinyPng },
@@ -87,4 +93,18 @@ test("stale editor cannot overwrite another tab's save", async ({ browser }) => 
   await pageA.reload();
   await expect(pageA.getByLabel("How we solved it")).toHaveValue("First tab's new explanation");
   await context.close();
+});
+
+test("interrupted saves keep the edits and can be retried", async ({ page }) => {
+  await login(page);
+  await page.goto(`/dashboard/competitions/${competitionId}/challenges/${challengeId}`);
+  await page.route("**/dashboard/**", route => route.request().method() === "POST" ? route.abort() : route.continue());
+  await page.getByLabel("How we solved it").fill("These notes must survive a temporary connection failure.");
+  await expect(page.getByRole("status")).toContainText("Save failed");
+  await expect(page.getByLabel("How we solved it")).toHaveValue("These notes must survive a temporary connection failure.");
+  await page.unroute("**/dashboard/**");
+  await page.getByRole("button", { name: "Retry or reload" }).click();
+  await expect(page.getByRole("status")).toContainText("Saved");
+  await page.reload();
+  await expect(page.getByLabel("How we solved it")).toHaveValue("These notes must survive a temporary connection failure.");
 });

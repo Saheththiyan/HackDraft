@@ -70,6 +70,12 @@ test("manual write-up becomes a reviewed, downloadable, immutable PDF and DOCX r
   await expect(page).toHaveURL(/\/reports\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "Practice CTF" })).toBeVisible();
   const reportUrl = page.url();
+  // A missing screenshot must fail visibly, not silently create an incomplete report.
+  await page.route("**/storage/v1/object/evidence/**", route => route.abort());
+  await page.getByRole("button", { name: "Download PDF" }).click();
+  await expect(page.locator("main").getByRole("alert")).toContainText("Could not load screenshot");
+  await expect(page.getByRole("button", { name: "Download PDF" })).toBeEnabled();
+  await page.unroute("**/storage/v1/object/evidence/**");
   const downloadPromise = page.waitForEvent("download", { timeout: 90_000 });
   await page.getByRole("button", { name: "Download PDF" }).click();
   const download = await downloadPromise;

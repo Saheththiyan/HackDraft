@@ -2,7 +2,11 @@ import { z } from "zod";
 
 const schema = z.object({
   url: z.url(),
-  key: z.string().min(1).refine((value) => !value.startsWith("replace-")),
+  key: z.string().min(1).refine((value) => {
+    if (value.startsWith("sb_publishable_")) return true;
+    try { return JSON.parse(atob(value.split(".")[1].replaceAll("-", "+").replaceAll("_", "/"))).role === "anon"; }
+    catch { return false; }
+  }),
 });
 export function supabaseConfig() {
   const result = schema.safeParse({

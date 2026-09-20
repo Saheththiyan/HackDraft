@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
+    "build:production": "npm run check:production && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -12,7 +13,10 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "test:e2e": "playwright test",
+    "test:production": "HACKDRAFT_PRODUCTION_TEST=1 playwright test",
+    "check:production": "node scripts/check-production.mjs",
     "test:ai": "node --test tests/gemini.test.mjs",
+    "test:config": "node --test tests/production-config.test.mjs",
     "test:ai:live": "RUN_LIVE_GEMINI_TEST=1 playwright test tests/gemini-live.spec.ts",
     "db:stop": "supabase stop"
   },

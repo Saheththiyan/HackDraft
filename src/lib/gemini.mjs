@@ -28,18 +28,16 @@ export async function requestGeminiDraft({ key, model, fields }, request = fetch
       if (response.status === 429) return { ok: false, message: "Gemini rate limit reached. Try again later." };
       if (response.status === 401 || response.status === 403) return { ok: false, message: "Gemini rejected the API key. Check GEMINI_API_KEY." };
       if (response.status === 404) {
-        const body = await response.json().catch(() => null);
-        const detail = typeof body?.error?.message === "string" ? body.error.message.replaceAll(key, "[redacted]").slice(0, 300) : "Model unavailable.";
-        return { ok: false, message: `Gemini model ${model} is unavailable: ${detail}` };
+        return { ok: false, message: "The configured Gemini model is unavailable. Ask your administrator to check GEMINI_MODEL." };
       }
       if (response.status === 400) {
-        const body = await response.json().catch(() => null);
-        const detail = typeof body?.error?.message === "string" ? body.error.message.replaceAll(key, "[redacted]").slice(0, 300) : "Invalid request.";
-        return { ok: false, message: `Gemini rejected the request: ${detail}` };
+        return { ok: false, message: "Gemini rejected the draft request. Ask your administrator to check the model configuration." };
       }
       return { ok: false, message: `Gemini could not generate a draft (HTTP ${response.status}). Try again later.` };
     }
     const payload = await response.json();
+    const finishReason = payload?.candidates?.[0]?.finishReason;
+    if (finishReason && finishReason !== "STOP") return { ok: false, message: "Gemini could not complete the draft. Shorten the notes or try again." };
     const parts = payload?.candidates?.[0]?.content?.parts;
     if (!Array.isArray(parts) || !parts.length || parts.some(part => typeof part?.text !== "string")) {
       return { ok: false, message: "Gemini returned no usable draft. Try again." };

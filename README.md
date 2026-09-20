@@ -21,9 +21,11 @@ Node.js 20.19+ and npm. Local Supabase also requires Docker. The Supabase CLI is
 
 6. Run `npm run dev`, open http://localhost:3000, and sign in. The root routes to the private dashboard; without valid environment settings it shows setup instructions.
 
-Everyone shares these credentials. Author labels and individual permissions are not implemented. Keep the account recovery email under team control.
+Everyone shares these credentials. Author labels identify solvers, but individual accounts and permissions are not implemented. Keep the account recovery email under team control.
 
 ## Hosted setup
+
+Follow the [production runbook](docs/PRODUCTION.md) for release checks, deployment configuration, hosted smoke testing, and backup/rollback procedures.
 
 1. Create a Supabase project and apply the files in `supabase/migrations/` in filename order through its SQL editor, or link the CLI and run `npx supabase db push`.
 2. In Auth settings, **disable Allow new users to sign up** and leave email/password login enabled. Local config does not automatically configure a hosted project's Auth settings.
@@ -48,12 +50,15 @@ For a fresh local setup, follow **Local setup** first. For an existing local dat
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run check:production` (validates intended hosted environment settings without printing credentials)
+- `npm run test:production` (builds/starts production Next.js against local Supabase and runs browser tests)
 - `npm run test:ai` (mocked Gemini responses; no API key required)
+- `npm run test:config` (production environment validation and credential-leak prevention)
 - `npm run test:ai:live` (one real Gemini request through a temporary local account; requires `GEMINI_API_KEY` and local Supabase)
 - `npm run db:test` (requires the running local Supabase stack)
 - `npx playwright install chromium`, then `npm run test:e2e` (requires local Supabase; creates and cleans up temporary test accounts)
 
-The 66-case transactional pgTAP suite covers owner access, unrelated-account isolation, private storage, administrative provisioning, parent/workspace consistency, revision approval, and immutable report snapshots. Browser tests cover login, invalid credentials, sign out, unauthenticated dashboard redirects, account isolation, challenge capture, screenshots, stale-tab conflicts, and the full write-up-to-PDF/DOCX workflow.
+The 76-case transactional pgTAP suite covers owner access, unrelated-account isolation, private storage, administrative provisioning, parent/workspace consistency, revision approval, immutable report snapshots, and the shared AI request limit. Browser tests cover login, invalid credentials, sign out, unauthenticated dashboard redirects, account isolation, challenge capture, screenshots, stale-tab conflicts, interrupted saves/uploads, export recovery, and the full write-up-to-PDF/DOCX workflow.
 
 ## Data and storage contract
 

@@ -7,13 +7,15 @@ process.env.E2E_SUPABASE_URL = status.API_URL;
 process.env.E2E_SUPABASE_PUBLIC_KEY = status.PUBLISHABLE_KEY ?? status.ANON_KEY;
 process.env.E2E_SUPABASE_ADMIN_KEY = status.SERVICE_ROLE_KEY;
 if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(status.API_URL)) throw new Error("E2E fixtures require local Supabase.");
+const production = process.env.HACKDRAFT_PRODUCTION_TEST === "1";
 export default defineConfig({
+  testMatch: "**/*.spec.ts",
   timeout: 60_000, expect: { timeout: 15_000 },
   testDir: "./tests", fullyParallel: false, workers: 1,
   use: { baseURL: "http://127.0.0.1:3100", browserName: "chromium" },
   webServer: {
-    command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
-    url: "http://127.0.0.1:3100/login", reuseExistingServer: false, timeout: 120_000,
+    command: production ? "npm run build && npm run start -- --hostname 127.0.0.1 --port 3100" : "npm run dev -- --hostname 127.0.0.1 --port 3100",
+    url: "http://127.0.0.1:3100/login", reuseExistingServer: false, timeout: production ? 240_000 : 120_000,
     env: { HACKDRAFT_E2E: "1", NEXT_PUBLIC_SUPABASE_URL: status.API_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: status.PUBLISHABLE_KEY ?? status.ANON_KEY },
   },
 });
