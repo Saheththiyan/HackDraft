@@ -56,6 +56,17 @@ test("create competition, capture challenge, autosave, screenshots, and ordering
   await page.reload();
   await expect(page.getByLabel("How we solved it")).toHaveValue("Used strings, then inspected metadata.");
   await expect(page.getByLabel("Flag (optional)")).toHaveValue("CTF{example}");
+  // Reloaded content paints from SSR HTML before React finishes hydrating and
+  // attaching listeners; setInputFiles() dispatches a native "change" event
+  // that hydration can otherwise miss entirely (production's fast first paint
+  // makes this race far more likely to land than in dev). Typing a change and
+  // waiting for the autosave status to react proves hydration is live, since
+  // that status only updates through our own React state, not raw DOM value.
+  await page.getByLabel("Category").fill("Forensics (hydrated)");
+  await expect(page.getByRole("status")).toContainText("Unsaved", { timeout: 5_000 });
+  await expect(page.getByRole("status")).toContainText("Saved", { timeout: 20_000 });
+  await page.getByLabel("Category").fill("Forensics");
+  await expect(page.getByRole("status")).toContainText("Saved", { timeout: 20_000 });
   await page.route("**/storage/v1/object/evidence/**", route => route.abort());
   await page.getByLabel("Choose screenshots").setInputFiles({ name: "interrupted.png", mimeType: "image/png", buffer: tinyPng });
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
