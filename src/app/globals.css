@@ -97,6 +97,12 @@ textarea.input { line-height: 1.6; resize: vertical; }
 .alert-ok { border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); background: var(--ok-soft); color: var(--ok); }
 .alert-accent { border-color: var(--accent-line); background: var(--accent-soft); }
 .alert button { text-decoration: underline; text-underline-offset: .2em; }
+.confirm-dialog { position: fixed; inset: 0; width: min(calc(100% - 2rem), 29rem); max-height: calc(100dvh - 2rem); margin: auto; overflow-y: auto; border: 1px solid var(--line-strong); border-radius: .75rem; background: var(--surface); color: var(--ink); box-shadow: 0 24px 70px #0005; }
+.confirm-dialog::backdrop { background: rgba(8, 13, 25, .68); backdrop-filter: blur(3px); }
+.confirm-dialog-body { padding: 1.75rem; }
+.confirm-dialog-title { margin: .5rem 0 .75rem; font-family: var(--font-serif), "Newsreader", Georgia, serif; font-size: 1.75rem; font-weight: 500; line-height: 1.2; }
+.confirm-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; margin-top: 1.75rem; }
+@media (max-width: 420px) { .confirm-dialog-body { padding: 1.25rem; } .confirm-dialog-actions { flex-direction: column-reverse; } .confirm-dialog-actions .button { width: 100%; } }
 details.subpanel > summary { cursor: pointer; list-style: none; }
 details.subpanel > summary::-webkit-details-marker { display: none; }
 details.subpanel > summary::before { content: "▸"; display: inline-block; width: 1.1em; color: var(--faint); transition: transform .15s ease; }

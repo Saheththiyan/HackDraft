@@ -17,6 +17,7 @@ export function WriteupEditor({ challenge, initialSections, images }: {
   const [state, setState] = useState<State>(challenge.reviewed ? "reviewed" : challenge.latestRevisionId ? "saved" : "unsaved");
   const [message, setMessage] = useState("");
   const [generated, setGenerated] = useState<WriteupSection[] | null>(null);
+  const [confirmReplace, setConfirmReplace] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [active, setActive] = useState<(typeof sectionIds)[number]>("overview");
   const current = useRef(initialSections);
@@ -27,6 +28,13 @@ export function WriteupEditor({ challenge, initialSections, images }: {
   const blocked = useRef(false);
   const reviewed = useRef(challenge.reviewed);
   const exists = useRef(Boolean(challenge.latestRevisionId));
+  const confirmRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = confirmRef.current;
+    if (!dialog) return;
+    if (confirmReplace && !dialog.open) dialog.showModal();
+    else if (!confirmReplace && dialog.open) dialog.close();
+  }, [confirmReplace]);
   useEffect(() => {
     const warning = (event: BeforeUnloadEvent) => { if (saved.current !== JSON.stringify(current.current) || pending.current) event.preventDefault(); };
     window.addEventListener("beforeunload", warning);
@@ -120,14 +128,19 @@ export function WriteupEditor({ challenge, initialSections, images }: {
   }
   function useGenerated() {
     if (!generated) return;
-    if (sections.some(section => section.markdown.trim()) && !window.confirm("Replace the current write-up text with this AI draft? Your existing screenshot selections will stay attached.")) return;
+    if (sections.some(section => section.markdown.trim())) { setConfirmReplace(true); return; }
+    applyGenerated();
+  }
+  function applyGenerated() {
+    if (!generated) return;
     set(generated.map(section => ({ ...section, evidenceIds: current.current.find(item => item.id === section.id)?.evidenceIds ?? [] })));
     setGenerated(null);
+    setConfirmReplace(false);
     setMessage("");
   }
   const section = sections.find(item => item.id === active)!;
   const tone = state === "reviewed" || state === "saved" ? "ok" : state === "conflict" || state === "error" ? "danger" : "warn";
-  return <div><section className="page-head"><div className="page-head-copy"><p className="page-context">Write-up</p><h1 className="page-title">{challenge.name}</h1><p className="page-lede">Draft the five report sections from your saved solve notes, then edit and approve them.</p></div><div className="page-head-actions"><span role="status" className="save-state" data-tone={tone}>{({ saved: "Draft saved", unsaved: "Unsaved draft", saving: "Saving…", reviewed: "Reviewed", error: "Save failed", conflict: "Edit conflict" } as const)[state]}</span><Button variant="outline" disabled={state === "saving" || state === "conflict"} onClick={() => void flush()}>Save draft</Button><Button disabled={state === "saving" || state === "conflict" || !readyForReview(sections)} onClick={() => void approve()}>{state === "reviewed" ? "Reviewed ✓" : "Approve write-up"}</Button></div></section>
+  return <div><dialog ref={confirmRef} className="confirm-dialog" aria-labelledby="replace-draft-title" aria-describedby="replace-draft-description" onClose={() => setConfirmReplace(false)}><div className="confirm-dialog-body"><p className="page-context">Confirm replacement</p><h2 id="replace-draft-title" className="confirm-dialog-title">Use this AI draft?</h2><p id="replace-draft-description" className="t-small t-muted">The generated text will replace your current write-up sections. Your screenshot selections will stay attached.</p><div className="confirm-dialog-actions"><Button variant="outline" autoFocus onClick={() => setConfirmReplace(false)}>Keep current text</Button><Button onClick={applyGenerated}>Replace with AI draft</Button></div></div></dialog><section className="page-head"><div className="page-head-copy"><p className="page-context">Write-up</p><h1 className="page-title">{challenge.name}</h1><p className="page-lede">Draft the five report sections from your saved solve notes, then edit and approve them.</p></div><div className="page-head-actions"><span role="status" className="save-state" data-tone={tone}>{({ saved: "Draft saved", unsaved: "Unsaved draft", saving: "Saving…", reviewed: "Reviewed", error: "Save failed", conflict: "Edit conflict" } as const)[state]}</span><Button variant="outline" disabled={state === "saving" || state === "conflict"} onClick={() => void flush()}>Save draft</Button><Button disabled={state === "saving" || state === "conflict" || !readyForReview(sections)} onClick={() => void approve()}>{state === "reviewed" ? "Reviewed ✓" : "Approve write-up"}</Button></div></section>
     {message && <p role="alert" className="alert alert-danger mt-6">{message} {state === "conflict" && <button type="button" onClick={() => window.location.reload()}>Reload latest</button>}</p>}
     <section className="panel mt-8 p-6"><h2 className="panel-heading">Draft from solve notes</h2><p className="mt-1 t-small t-muted">Gemini reads the saved prompt, “How we solved it” notes, commands, flag, and screenshot captions, and proposes all five sections. Check every technical detail and attach screenshots before approving.</p><Button className="mt-4" variant="outline" disabled={generating || state === "conflict"} onClick={() => void generate()}>{generating ? "Generating…" : "Generate from solve notes"}</Button>{generated && <div className="alert alert-accent mt-5 p-5"><p className="font-medium">Generated draft ready to review</p><p className="mt-1 t-small t-muted">Applying it replaces the current section text. Screenshot selections stay attached.</p><div className="mt-4 space-y-2">{generated.map(section => <details key={section.id} className="subpanel p-3"><summary className="t-small font-medium">{sectionTitles[section.id]}</summary><div className="prose-report mt-3"><Markdown remarkPlugins={[remarkGfm]} components={{ img: () => null }}>{section.markdown || "*Empty section*"}</Markdown></div></details>)}</div><div className="mt-5 flex gap-3"><Button onClick={useGenerated}>Use this draft</Button><Button variant="outline" onClick={() => setGenerated(null)}>Discard</Button></div></div>}</section>
     <div className="mt-8 grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)]"><nav aria-label="Write-up sections" className="panel section-nav h-fit p-2">{sectionIds.map(id => { const done = Boolean(sections.find(item => item.id === id)?.markdown.trim()); return <button type="button" key={id} onClick={() => setActive(id)} aria-current={id === active ? "true" : undefined}>{sectionTitles[id]}{done ? <span className="done" aria-label="written">✓</span> : <span className="todo" aria-hidden="true">–</span>}</button>; })}</nav>
