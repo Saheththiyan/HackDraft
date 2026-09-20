@@ -11,5 +11,5 @@ export default async function ReportPage({ params }: { params: Promise<{ competi
   if (!report) notFound();
   const parsed = snapshotSchema.safeParse(report.content);
   if (!parsed.success) throw new Error("This saved report has an invalid content format.");
-  return <main className="py-10"><Link href={`/dashboard/competitions/${competitionId}/reports`} className="text-sm text-emerald-400 hover:underline">← Saved reports</Link><ReportViewer reportId={report.id} createdAt={report.created_at} content={parsed.data} /></main>;
+  return <main><nav className="crumbs mt-6" aria-label="Breadcrumb"><Link href="/dashboard">Competitions</Link><span aria-hidden="true">/</span><Link href={`/dashboard/competitions/${competitionId}/reports`}>Reports</Link><span aria-hidden="true">/</span><span>{report.title}</span></nav><ReportViewer reportId={report.id} createdAt={report.created_at} content={parsed.data} /></main>;
 }

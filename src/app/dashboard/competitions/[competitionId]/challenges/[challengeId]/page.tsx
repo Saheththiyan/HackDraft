@@ -12,5 +12,5 @@ export default async function ChallengePage({ params }: { params: Promise<{ comp
   if (!challenge) notFound();
   const { data: evidence, error } = await supabase.from("evidence").select("id, storage_path, caption, position").eq("challenge_id", challengeId).order("position");
   if (error) throw new Error("Unable to load screenshots.");
-  return <main className="py-10"><Link href={`/dashboard/competitions/${competitionId}`} className="text-sm text-emerald-400 hover:underline">← {competition.name}</Link><p className="eyebrow mt-8">Challenge capture</p><ChallengeEditor challenge={{ ...challenge, category: challenge.category ?? "", author_label: challenge.author_label ?? "", evidence: evidence ?? [] }} /></main>;
+  return <main><nav className="crumbs mt-6" aria-label="Breadcrumb"><Link href="/dashboard">Competitions</Link><span aria-hidden="true">/</span><Link href={`/dashboard/competitions/${competitionId}`}>{competition.name}</Link><span aria-hidden="true">/</span><span>{challenge.name}</span></nav><ChallengeEditor challenge={{ ...challenge, category: challenge.category ?? "", author_label: challenge.author_label ?? "", evidence: evidence ?? [] }} /></main>;
 }
