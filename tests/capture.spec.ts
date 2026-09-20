@@ -15,6 +15,23 @@ async function login(page: Page) {
   await page.getByRole("button", { name: "Open team workspace" }).click();
   await expect(page.getByRole("heading", { name: "Capture team" })).toBeVisible();
 }
+// A fresh navigation paints from SSR HTML before React finishes hydrating and
+// attaching listeners. Interacting immediately after goto()/reload() (e.g.
+// setInputFiles(), fill()) can land in that gap: the native browser event
+// fires with nobody listening, and gets lost or interleaved with whatever
+// React commits once hydration does catch up (production's fast first paint
+// makes this race far more likely to land than in dev). The theme toggle is
+// a safe probe for "hydration is live": it flips purely through client
+// state with no network round trip, so round-tripping it here can't disturb
+// the challenge data or its optimistic-concurrency version.
+async function confirmHydrated(page: Page) {
+  const toggle = page.getByRole("button", { name: /Switch to (light|dark) mode/ });
+  const before = await toggle.getAttribute("aria-label");
+  await toggle.click();
+  await expect(toggle).not.toHaveAttribute("aria-label", before!);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-label", before!);
+}
 test.beforeAll(async () => {
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error) throw error;
@@ -56,17 +73,7 @@ test("create competition, capture challenge, autosave, screenshots, and ordering
   await page.reload();
   await expect(page.getByLabel("How we solved it")).toHaveValue("Used strings, then inspected metadata.");
   await expect(page.getByLabel("Flag (optional)")).toHaveValue("CTF{example}");
-  // Reloaded content paints from SSR HTML before React finishes hydrating and
-  // attaching listeners; setInputFiles() dispatches a native "change" event
-  // that hydration can otherwise miss entirely (production's fast first paint
-  // makes this race far more likely to land than in dev). Typing a change and
-  // waiting for the autosave status to react proves hydration is live, since
-  // that status only updates through our own React state, not raw DOM value.
-  await page.getByLabel("Category").fill("Forensics (hydrated)");
-  await expect(page.getByRole("status")).toContainText("Unsaved", { timeout: 5_000 });
-  await expect(page.getByRole("status")).toContainText("Saved", { timeout: 20_000 });
-  await page.getByLabel("Category").fill("Forensics");
-  await expect(page.getByRole("status")).toContainText("Saved", { timeout: 20_000 });
+  await confirmHydrated(page);
   await page.route("**/storage/v1/object/evidence/**", route => route.abort());
   await page.getByLabel("Choose screenshots").setInputFiles({ name: "interrupted.png", mimeType: "image/png", buffer: tinyPng });
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
@@ -97,6 +104,8 @@ test("stale editor cannot overwrite another tab's save", async ({ browser }) => 
   const pageB = await context.newPage();
   await pageA.goto(`/dashboard/competitions/${competitionId}/challenges/${challengeId}`);
   await pageB.goto(`/dashboard/competitions/${competitionId}/challenges/${challengeId}`);
+  await confirmHydrated(pageA);
+  await confirmHydrated(pageB);
   await pageA.getByLabel("How we solved it").fill("First tab's new explanation");
   await expect(pageA.getByRole("status")).toContainText("Saved", { timeout: 20_000 });
   await pageB.getByLabel("How we solved it").fill("Second tab's conflicting explanation");
@@ -109,6 +118,7 @@ test("stale editor cannot overwrite another tab's save", async ({ browser }) => 
 test("interrupted saves keep the edits and can be retried", async ({ page }) => {
   await login(page);
   await page.goto(`/dashboard/competitions/${competitionId}/challenges/${challengeId}`);
+  await confirmHydrated(page);
   await page.route("**/dashboard/**", route => route.request().method() === "POST" ? route.abort() : route.continue());
   await page.getByLabel("How we solved it").fill("These notes must survive a temporary connection failure.");
   await expect(page.getByRole("status")).toContainText("Save failed");
