@@ -43,6 +43,11 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+      - name: Confirm Vercel secrets reached this job
+        run: |
+          echo "VERCEL_ORG_ID=[$VERCEL_ORG_ID]"
+          echo "VERCEL_PROJECT_ID=[$VERCEL_PROJECT_ID]"
+          echo "VERCEL_TOKEN length=${#VERCEL_TOKEN}"
       - run: npm install --global vercel
       - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
       - run: vercel build --prod --token="$VERCEL_TOKEN"
